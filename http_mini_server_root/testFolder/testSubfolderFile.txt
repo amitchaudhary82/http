@@ -1,0 +1,1 @@
+This is a test sub folder file and file size is returned back in HTTP call

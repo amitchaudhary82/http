@@ -1,0 +1,14 @@
+NNN_method_scenario_status.http
+Recommended naming rules
+Use always: Syntax
+NNN : 3 digits numbering
+Method: lowercase method name (get, put, post)
+underscore _
+scenario: scenario name covering everything rest as free text
+status: expected status like 200, 403, 500
+.http : extension
+
+
+
+
+

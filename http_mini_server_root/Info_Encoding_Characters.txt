@@ -1,0 +1,87 @@
+Format:
+%HH
+
+HH = hex ASCII code.
+Examples:
+char	encoding
+space	%20
+"	%22
+#	%23
+%	%25
+&	%26
++	%2B
+/	%2F
+:	%3A
+?	%3F
+=	%3D
+
+
+
+
+Most useful ones for your current tests
+
+| char  | encoding |
+| ----- | -------- |
+| space | %20      |
+| "     | %22      |
+| #     | %23      |
+| %     | %25      |
+| +     | %2B      |
+| /     | %2F      |
+| ?     | %3F      |
+| =     | %3D      |
+| &     | %26      |
+
+
+
+
+ENCODING for QUERS
+Encoding for query parameters
+Same encoding, but very common in URLs.
+Example:
+/search?q=hello world
+Must become:
+/search?q=hello%20world
+Or sometimes:
+/search?q=hello+world
+Both can be used in query strings.
+Important:
+place	space
+path	%20
+query	%20 or +
+
+
+
+
+Reserved characters you should know
+These have special meaning in URLs:
+char	meaning
+/	path separator
+?	start query
+&	next param
+=	assign value
+#	fragment
+:	scheme/port
+@	user info
+
+
+
+
+Wrong:
+/file?name=test&x=1
+
+Correct if part of path:
+/file%3Fname%3Dtest%26x%3D1
+
+
+
+UTF-8 encoding in URLs
+If you use non-ASCII characters:
+Example file:
+ä.txt
+URL must be encoded:
+%C3%A4.txt
+Because UTF-8 → percent encoding.
+You don't need this yet, but good to know.
+
+

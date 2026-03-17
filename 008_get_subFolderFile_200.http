@@ -1,0 +1,2 @@
+GET /testFolder/testSubfolderFile.txt HTTP/1.1
+hostname: localhost
