@@ -1,25 +1,41 @@
-This is a test file with special characters in the file name
-needs to use encoding in the URL when doing HTTP call
+This is a test file with special characters in the file name.
+When using HTTP / URL, special characters must be encoded.
 
-file name
+
+Original file name
+
 test_file%special@parm german_ä.txt
 
-encoding needed
-char	need encode	encoding
-%	yes	%25
-@	usually OK, but safer to encode	%40
-space	yes	%20
-ä	yes (UTF-8)	%C3%A4
-_	no	_
-.	no	.
 
 
-DONOT USE / in the file name as it then considers it as Folder
+Encoding needed
 
-Target File Name Encoded
+char    encode?   encoding   reason
+------  --------  --------   -------------------------
+%       yes       %25        % is escape character
+@       safer     %40        reserved character
+space   yes       %20        not allowed in URL
+ä       yes       %C3%A4     UTF-8 encoding
+_       no        _          safe character
+.       no        .          safe character
+
+
+
+Important
+
+Do NOT use "/" in file name.
+"/" is treated as folder separator in URL.
+
+
+
+Encoded file name to use in URL
+
 /test_file%25special%40parm%20german_%C3%A4.txt
 
 
 
+Rule
 
-
+Special characters must be percent-encoded.
+Non-ASCII characters must use UTF-8,
+then each byte becomes %HH.
