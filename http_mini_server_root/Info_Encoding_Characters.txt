@@ -5,39 +5,50 @@ URL STRUCTURE
 Formal syntax
 <scheme>://<user>:<password>@<host>:<port>/<path>;<params>?<query>#<frag>
 
+Example URL
 
-Meaning
-scheme   protocol (http, https, ftp)
------    ---------------------------
-user     username (rare)
-password password (rare)
-host     server name
-port     port number
-path     resource path
-params   path parameters (rare)
-query    parameters after ?
-frag     fragment after #
+http://admin:1234@myserver:8080/report.txt;version=2?lang=en&country=ch#summary
 
 
-Example (full)
-http://user:pass@host:8080/file.txt;v=2?name=test&x=1#top
+part      value        meaning
+--------  -----------  -----------------------
+scheme    http         protocol
+user      admin        username
+password  1234         password
+host      myserver     server name
+port      8080         port number
+path      /report.txt  file on server
+params    version=2    path parameter
+query     lang=en      query parameter
+query     country=ch   query parameter
+fragment  summary      page section
+
+
+Note
+;version=2 is called path parameter
+Path parameters are rare in modern HTTP,
+but they are part of official URL syntax.
+
+
 
 Example (common)
-http://host:8080/file.txt?name=test
+http://myserver:8080/report.txt?lang=en&country=ch
 
 Simplified form (most used)
 scheme://host/path?query#fragment
 
 
+
 Separators used by URL
+
 char   meaning
 -----  -----------------
 :      scheme / port
 @      user info
 /      path
-;      params
+;      path params
 ?      query start
-&      next param
+&      next parameter
 =      assign value
 #      fragment
 %      escape character
@@ -46,375 +57,155 @@ char   meaning
 Because these characters have special meaning,
 they must be encoded when used as data.
 
-Example 1 — & has special meaning
 
-URL:
-http://host/search?name=test&x=1
+Example we want to query using
+name = coffee & milk
 
-Meaning:
-part     value
--------- --------------
-query    name=test
-query    x=1
 
+WRONG
+http://host/search?name=coffee & milk
 
-Because & means → next parameter
 
-Now suppose the real value should be:
-name = test&x=1
+here Server reads
 
-Wrong:
-http://host/search?name=test&x=1
-as here Server thinks there are two parameters.
+part    value
+------  ----------
+query   name=coffee
+query   milk
 
 
-Correct (encode & and =):
-http://host/search?name=test%26x%3D1
+CORRECT
+http://host/search?name=coffee%20%26%20milk
 
-Now server sees:
-name = test&x=1
 
+Server reads
 
+part    value
+------  ---------------------
+query   name=coffee & milk
 
 
 
+------------------------------------------------------------
+UTF-8 ENCODING IN URLS
+------------------------------------------------------------
 
-Reserved characters you should know
-These have special meaning in URLs:
-char	meaning
-/	path separator
-?	start query
-&	next param
-=	assign value
-#	fragment
-:	scheme/port
-@	user info
+If the text contains non-ASCII characters (ä ö ü é ñ ç etc),
+the URL must use UTF-8 percent encoding.
 
 
 
+Example — filename with umlaut
 
-Wrong:
-/file?name=test&x=1
+Wanted filename
+müller.txt
 
-Correct if part of path:
-/file%3Fname%3Dtest%26x%3D1
 
+WRONG
+http://host/files/müller.txt
 
 
-UTF-8 encoding in URLs
-----------------------
-If you use non-ASCII characters:
-Example file: ä.txt
-URL must be encoded: %C3%A4.txt
-Because UTF-8 → percent encoding.
+CORRECT
+http://host/files/m%C3%BCller.txt
 
 
+Reason
+ü in UTF-8 = C3 BC
 
-# URL ENCODING GUIDE FOR HTTP PROTOCOL
+Each byte → %HH
+which becomes %C3%BC
 
-## What is URL Encoding?
-URL encoding (also called percent encoding) is a mechanism for encoding information in a Uniform Resource Identifier (URI). 
-It's necessary because certain characters have special meaning in URLs or aren't safe for transmission over the internet.
 
----
 
-## BASIC ENCODING FORMAT
+Example — word with accent
 
-%HH
+Wanted value
+name = café
 
-Where HH = two-digit hexadecimal ASCII code.
 
-Examples:
-| char  | encoding | ASCII |
-|-------|----------|-------|
-| space | %20      | 32    |
-| "     | %22      | 34    |
-| #     | %23      | 35    |
-| %     | %25      | 37    |
-| &     | %26      | 38    |
-| +     | %2B      | 43    |
-| /     | %2F      | 47    |
-| :     | %3A      | 58    |
-| ?     | %3F      | 63    |
-| =     | %3D      | 61    |
+WRONG
+http://host/search?name=café
 
 
----
+CORRECT
+http://host/search?name=caf%C3%A9
 
-## RESERVED CHARACTERS (Have Special Meaning in URLs)
 
-These characters should be encoded when used as data values:
+é in UTF-8 = C3 A9
+which becomes %C3%A9
 
-| char | meaning              | purpose                    | example                |
-|------|----------------------|----------------------------|------------------------|
-| /    | path separator       | divides URL segments       | /path/to/file          |
-| ?    | query start          | begins query string        | /search?q=value        |
-| &    | parameter divider    | separates multiple params  | ?a=1&b=2               |
-| =    | key-value assignment | assigns value to param     | ?name=value            |
-| #    | fragment/anchor      | links to page section      | /page#section          |
-| :    | scheme/port separator| defines protocol/port      | https://host:8080      |
-| @    | user credentials     | specifies user info        | https://user@host      |
-| %    | escape character     | indicates encoded char     | %20                    |
 
 
----
+Example — city name
 
-## ENCODING RULES BY CONTEXT
+Wanted value
+city = Zürich
 
-### In URL Path
-Character: space Encoding: %20 Location: /path/to/my%20file.txt
 
-space changed to encoding
-/search?q=hello world    >    /search?q=hello%20world
+WRONG
+http://host/search?city=Zürich
 
-Or sometimes:
-/search?q=hello+world
-Both can be used in query strings.
-Important:
-place	space
-path	%20
-query	%20 or +
 
+CORRECT
+http://host/search?city=Z%C3%BCrich
 
 
-### In Query String (Parameter Names & Values)
 
-Character: space Encoding: %20 or + Location: 
-/search?q=hello%20world 
-/search?q=hello+world 
+Rule
+non-ASCII character
+→ convert to UTF-8 bytes
+→ encode each byte as %HH
 
-Both are valid in query strings.
 
 
-
-### Important Rule:
-| location          | space encoding              |
-|-------------------|-----------------------------|
-| path              | %20 (always)                |
-| query value       | %20 or + (both work)        |
-| query parameter   | %20 (recommended)           |
-
----
-
-
-## MOST COMMONLY NEEDED ENCODINGS
-
-Keep these in mind for HTTP requests and URL testing:
-
-| char  | encoding | use case                                   |
-|-------|----------|--------------------------------------------|
-| space | %20      | filenames, search terms                    |
-| "     | %22      | quoted strings in values                   |
-| #     | %23      | part of data value (not fragment)          |
-| %     | %25      | literal percent sign in data               |
-| &     | %26      | ampersand as data (not parameter divider)  |
-| +     | %2B      | plus sign in data (not space)              |
-| /     | %2F      | forward slash as data (not path separator) |
-| ?     | %3F      | question mark in data (not query starter)  |
-| =     | %3D      | equals sign in data (not assignment)       |
-
----
-
-
-## REAL-WORLD EXAMPLES
-
-### Example 1: Simple Search
-WRONG: /search?q=hello world RIGHT: /search?q=hello%20world
-
-Reason: space must be encoded in query string
-
-
-
-### Example 2: Multiple Parameters with Special Characters
-WRONG: /search?name=john&age=30&hobbies=reading & coding RIGHT: /search?name=john&age=30&hobbies=reading%20%26%20coding
-
-Reason:
-
-& in "reading & coding" must be %26 (otherwise confused with parameter separator)
-space must be %20
-
-
-
-### Example 3: File Path with Special Characters
-WRONG: /file?name=test&x=1 RIGHT: /file?name=test%26x%3D1
-
-Reason: If you want to search for filename "test&x=1", the & and = must be encoded
-
-
-
-### Example 4: Quoted Strings
-
-WRONG: /api/search?q="my data" RIGHT: /api/search?q=%22my%20data%22
-
-Reason: " encodes to %22, space encodes to %20
-
-
-
-### Example 5: Path with Special Characters
-WRONG: /files/my document.txt RIGHT: /files/my%20document.txt
-
-Reason: space in filename must be %20
-
-
----
-
-## UTF-8 ENCODING IN URLS
-
-When you use non-ASCII characters (letters with accents, symbols, emojis, etc.):
-
-### Example 1: Umlaut Character
-
-
-File: ä.txt Encoded: %C3%A4.txt
-
-Why: UTF-8 encoding of 'ä' produces bytes C3 A4 in hex
-
-
-
-### Example 2: Chinese Character
-Search: 你好 (hello in Chinese) Encoded: %E4%BD%A0%E5%A5%BD
-
-Process:
-
-Convert to UTF-8 bytes
-Convert each byte to hex
-Prefix each with %
-
-
-
-### Example 3: Emoji
-Search: 😀 Encoded: %F0%9F%98%80
-
-Process: Same as above for multi-byte UTF-8 sequences
-
----
-
-## QUICK DECISION TREE
-
-**Do I need to encode this character?**
-
-1. Is it a-z, A-Z, 0-9, hyphen (-), underscore (_), period (.), or tilde (~)?
-   → NO, these are unreserved and safe
-
-2. Is it one of: / ? # [ ] @ ! $ & ' ( ) * + , ; = : space
-   → YES, encode it (these have special meaning)
-
-3. Is it something else?
-   → YES, encode it (for safety)
-
----
-
-## COMMON MISTAKES & CORRECTIONS
-
-### Mistake 1: Not Encoding Ampersand in Data
-❌ WRONG: /api/search?filter=a&b&category=electronics ✅ RIGHT: /api/search?filter=a%26b&category=electronics
-
-Reason: The & in "a&b" would be misinterpreted as parameter separator The & between filter and category is the REAL separator
-
-
-
-### Mistake 2: Not Encoding Question Mark in Data
-❌ WRONG: /api/search?query=what is this? ✅ RIGHT: /api/search?query=what%20is%20this%3F
-
-Reason: The ? would confuse the parser
-
-
-
-
-### Mistake 3: Not Encoding Equals Sign in Data
-❌ WRONG: /files/get?name=formula=x+5 ✅ RIGHT: /files/get?name=formula%3Dx%2B5
-
-Reason: = and + have special meaning in query strings
-
-
-
-### Mistake 4: Forgetting UTF-8 for International Characters
-
----
-
-## ENCODING BY HTTP METHOD
-
-### GET Requests
-- Query parameters in URL → must be encoded
-- Example: `/search?q=hello%20world`
-
-### POST Requests
-- URL path → must be encoded
-- Body data → may use different encoding (form-urlencoded uses same rules)
-- Headers → different rules apply
-
-### PUT/DELETE/PATCH
-- URL path → must be encoded
-- Similar rules to GET/POST
-
----
-
-## TESTING & VERIFICATION
-
-### Method 1: Browser DevTools
-1. Open DevTools (F12)
-2. Go to Network tab
-3. Make request
-4. Inspect "Request URL" to see actual encoding
-
-### Method 2: curl Command
-
-
-curl "https://example.com/search?q=hello%20world"
-
-### Method 3: Online Encoders
-Search for "URL encoder" to verify your encodings
-
-### Method 4: Python
-```python
-import urllib.parse
-encoded = urllib.parse.quote("hello world")
-print(encoded)  # Output: hello%20world
-
-
-REFERENCE TABLE
-| Character | Encoding | Common Use      |
-|-----------|----------|-----------------|
-| space     | %20      | search terms    |
-| "         | %22      | quoted text     |
-| #         | %23      | section markers |
-| $         | %24      | monetary values |
-| %         | %25      | percent signs   |
-| &         | %26      | logical AND     |
-| '         | %27      | apostrophes     |
-| (         | %28      | grouping        |
-| )         | %29      | grouping        |
-| *         | %2A      | wildcards       |
-| +         | %2B      | addition        |
-| ,         | %2C      | separators      |
-| /         | %2F      | paths           |
-| :         | %3A      | time/ratio      |
-| ;         | %3B      | separators      |
-| <         | %3C      | comparison      |
-| =         | %3D      | assignment      |
-| >         | %3E      | comparison      |
-| ?         | %3F      | questions       |
-| @         | %40      | email           |
-| [         | %5B      | grouping        |
-| \         | %5C      | escape          |
-| ]         | %5D      | grouping        |
-| ^         | %5E      | exponent        |
-| `         | %60      | backtick        |
-| {         | %7B      | grouping        |
-| \|        | %7C      | pipe            |
-| }         | %7D      | grouping        |
-| ~         | %7E      | tilde           |
-
-
-
-
-SUMMARY
-✓ Always encode special characters in URLs ✓ Use %HH format where HH is hex ASCII code ✓ Different contexts have different rules (path vs query) ✓ UTF-8 characters need multi-byte encoding ✓ Test your URLs in browser DevTools or with curl ✓ When in doubt, encode it - it's safer
-
-
-
-
-
-
-
-
+============================================================
+ENCODING REFERENCE
+============================================================
+
+------------------------------------------------------------
+COMMON URL ENCODINGS
+------------------------------------------------------------
+
+char   code   ASCII   meaning / use
+-----  -----  -----   --------------------------
+space  %20    32      space in path or query
+"      %22    34      quoted text
+#      %23    35      data, not fragment
+$      %24    36      dollar sign
+%      %25    37      literal percent
+&      %26    38      inside value
+'      %27    39      apostrophe
+(      %28    40      bracket
+)      %29    41      bracket
+*      %2A    42      star
++      %2B    43      plus sign
+,      %2C    44      comma
+/      %2F    47      slash inside data
+:      %3A    58      colon inside data
+;      %3B    59      param separator
+<      %3C    60      less-than
+=      %3D    61      inside value
+>      %3E    62      greater-than
+?      %3F    63      inside value
+@      %40    64      user info symbol
+[      %5B    91      bracket
+\      %5C    92      backslash
+]      %5D    93      bracket
+^      %5E    94      caret
+`      %60    96      backtick
+{      %7B    123     brace
+|      %7C    124     pipe
+}      %7D    125     brace
+~      %7E    126     tilde
+
+
+
+------------------------------------------------------------
+NOTES
+------------------------------------------------------------
+
+• Encode special characters when used as data
+• Encode non-ASCII characters using UTF-8
+• Each UTF-8 byte becomes %HH
+• Path and query follow same encoding rules
+• When unsure → encode
