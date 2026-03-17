@@ -76,12 +76,9 @@ Correct if part of path:
 
 
 UTF-8 encoding in URLs
+----------------------
 If you use non-ASCII characters:
-Example file:
-ä.txt
-URL must be encoded:
-%C3%A4.txt
+Example file: ä.txt
+URL must be encoded: %C3%A4.txt
 Because UTF-8 → percent encoding.
-You don't need this yet, but good to know.
-
 
